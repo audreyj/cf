@@ -99,12 +99,15 @@ h1, h2 {
   width: 230px;
 }
 
+#delay-chart .axis {
+  //tickFormat(%a);
+  tickValues: [0='S',1='M',2='T',3='W',4='T',5='F',6='S'];
+}
+
 #delayy-chart {
   width: 230px;
 }
-#delayyyy-chart {
-  width: 230px;
-}
+
 
 #distance-chart {
   width: 420px;
@@ -136,14 +139,14 @@ h1, h2 {
 
 #flight-list .flight div {
   display: inline-block;
-  width: 15%;
+  width: 25%;
 }
 
 #flight-list div.distance,
 #flight-list div.delay,
 #flight-list div.time,
 #flight-list div.delayy  {
-  width: 8%;
+  width: 10%;
   padding-right: 10px;
   text-align: left;
 }
@@ -163,7 +166,7 @@ aside {
 
 <div id="body">
 
-<h1>Concur Visualize-It Pro</h1>
+<h1>Concur</h1>
 
 <div id="charts">
   <div id="hour-chart" class="chart">
@@ -174,9 +177,6 @@ aside {
   </div>
   <div id="delayy-chart" class="chart">
     <div class="title">Attendees</div>
-  </div>
-   <div id="delayyyy-chart" class="chart">
-    <div class="title">Cost/Person</div>
   </div>
   <div id="distance-chart" class="chart">
     <div class="title">Amount ($)</div>
@@ -203,14 +203,14 @@ aside {
 <script>
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-d3.csv("sample_8.json", function(error, flights) {
+d3.csv("sample_7.json", function(error, flights) {
 
 
   var typeDict = { 1: 'MEALS', 2: 'AIRFR', 3: 'GAS', 4: 'PARKING', 5: 'CARRT', 6: 'GRTRN', 7: 'OFCSP',
                   8: 'TELEC', 9: 'TRANG', 10: 'FIELD', 11: 'LODGN', 12: 'OTHER' };
 
   // Various formatters.
-  var formatNumber = d3.format(",f"),
+  var formatNumber = d3.format(",d"),
       formatChange = d3.format(",f"),
       formatDate = d3.time.format("%B %d, %Y"),
       formatTime = d3.time.format("%I:%M %p");
@@ -240,14 +240,8 @@ d3.csv("sample_8.json", function(error, flights) {
       delay = flight.dimension(function(d) { return Math.max(-60, Math.min(149, d.delay)); }),
       delays = delay.group(function(d) { return d; }),
 
-      delayy = flight.dimension(function(d) { return Math.max(-60, Math.min(14, d.delayy)); }),
-      delayys = delayy.group(function(d) { return d; }),
-
-      delayyy = flight.dimension(function(d) { return d.delayyy; }),
-      delayyys = delayyy.group(function(d) { return d; }),
-
-      delayyyy = flight.dimension(function(d) { return Math.max(-60, Math.min(999, d.delayyyy)); }),
-      delayyyys = delayyyy.group(function(d) { return Math.floor(d / 50) * 50; }),
+      delayy = flight.dimension(function(d) { return d.delay; }),
+      delayys = delayy.group(),
       
       distance = flight.dimension(function(d) { return Math.min(1999, d.distance); }),
       distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
@@ -272,14 +266,7 @@ d3.csv("sample_8.json", function(error, flights) {
         .dimension(delayy)
         .group(delayys)
       .x(d3.scale.linear()
-        .domain([1, 15])
-        .rangeRound([0, 10 * 21])),
-
-        barChart()
-        .dimension(delayyyy)
-        .group(delayyyys)
-      .x(d3.scale.linear()
-        .domain([1, 1000])
+        .domain([1, 20])
         .rangeRound([0, 10 * 21])),
 
     barChart()
@@ -294,7 +281,7 @@ d3.csv("sample_8.json", function(error, flights) {
         .group(dates)
         .round(d3.time.day.round)
       .x(d3.time.scale()
-        .domain([new Date(2016, 3, 17), new Date(2016, 6, 30)])
+        .domain([new Date(2016, 3, 1), new Date(2016, 6, 10)])
         .rangeRound([0, 10 * 90]))
         .filter([new Date(2016, 5, 15), new Date(2016, 5, 20)])
 
@@ -374,11 +361,6 @@ d3.csv("sample_8.json", function(error, flights) {
           .text(function(d) { return formatTime(d.date); });
 
       flightEnter.append("div")
-          .attr("class", "delayyy")
-          .text(function(d) { return d.delayyy ; });
-
-
-      flightEnter.append("div")
           .attr("class", "origin")
           .text(function(d) { return d.origin; });
 
@@ -392,12 +374,7 @@ d3.csv("sample_8.json", function(error, flights) {
 
       flightEnter.append("div")
           .attr("class", "delayy")
-          .text(function(d) { return formatNumber(d.delayy) + " attendee(s)"; });
-
-
-      flightEnter.append("div")
-          .attr("class", "delayyyy")
-          .text(function(d) { return formatNumber(d.delayyyy) + " dollars/person"; });
+          .text(function(d) { return formatNumber(d.delayy) + " people"; });
 
       flightEnter.append("div")
           .attr("class", "distance")
